@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # MongoDB Database
   mongodb:
@@ -44,10 +42,13 @@ services:
       - "5001:5001"
     environment:
       - ADMIN_API_URL=http://admin:5000/api
+      - MONGODB_URI=mongodb://mongodb:27017/laptop_inventory
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
       - SECRET_KEY=${GUEST_SECRET_KEY:-guest-secret-key-change-me}
       - FLASK_ENV=${FLASK_ENV:-development}
     depends_on:
       - admin
+      - mongodb
     networks:
       - lim_network
     volumes:
