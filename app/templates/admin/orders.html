@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Orders - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-shopping-bag"></i> Customer Orders</h2>
+    <span class="badge bg-primary fs-6">{{ orders|length }} orders</span>
+</div>
+
+<!-- Filter Bar -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status Filter</label>
+                <select class="form-select" name="status" id="status" onchange="this.form.submit()">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Orders</option>
+                    <option value="unconfirmed" {% if status_filter == 'unconfirmed' %}selected{% endif %}>Unconfirmed</option>
+                    <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                    <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                </select>
+            </div>
+            <div class="col-md-9 d-flex align-items-end">
+                <span class="text-muted">Showing {{ orders|length }} orders</span>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Orders List -->
+{% if orders %}
+<div class="row">
+    {% for order in orders %}
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">Order {{ order.order_id }}</h5>
+                    <small class="text-muted">
+                        {{ order.created_at.strftime('%B %d, %Y at %I:%M %p') if order.created_at else 'Date not available' }}
+                    </small>
+                </div>
+                <span class="badge bg-{{ 'warning' if order.status == 'unconfirmed' else 'info' if order.status == 'confirmed' else 'primary' if order.status == 'in_progress' else 'success' }} fs-6">
+                    {{ order.status.replace('_', ' ').title() }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user"></i> Customer Information</h6>
+                        <p class="mb-1"><strong>{{ order.customer_name }}</strong></p>
+                        <p class="mb-1"><i class="fas fa-envelope"></i> {{ order.email }}</p>
+                        {% if order.phone %}
+                        <p class="mb-1"><i class="fas fa-phone"></i> {{ order.phone }}</p>
+                        {% endif %}
+                        {% if order.address %}
+                        <p class="mb-1"><i class="fas fa-map-marker-alt"></i> {{ order.address }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-shopping-cart"></i> Order Items</h6>
+                        {% if order.items %}
+                            {% for item in order.items %}
+                            <div class="border rounded p-2 mb-2">
+                                <strong>{{ item.laptop_brand }} {{ item.laptop_model }}</strong>
+                                <br>
+                                <small>Base Price: ${{ "%.2f"|format(item.base_price) }}</small>
+                                {% if item.spare_parts %}
+                                    <br><small>Upgrades:</small>
+                                    {% for part in item.spare_parts %}
+                                        <br><small class="text-muted">• {{ part.name }} (+${{ "%.2f"|format(part.price) }})</small>
+                                    {% endfor %}
+                                {% endif %}
+                                <br><strong>Total: ${{ "%.2f"|format(item.total_price) }}</strong>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        <div class="border-top pt-2 mt-2">
+                            <strong>Order Total: ${{ "%.2f"|format(order.total_amount) }}</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Actions -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6><i class="fas fa-cogs"></i> Actions</h6>
+                        <form method="POST" action="{{ url_for('admin.update_order_status', order_id=order._id) }}" class="d-inline">
+                            <div class="input-group" style="max-width: 300px;">
+                                <select name="status" class="form-select" required>
+                                    <option value="">Change Status</option>
+                                    <option value="unconfirmed" {% if order.status == 'unconfirmed' %}disabled{% endif %}>Unconfirmed</option>
+                                    <option value="confirmed" {% if order.status == 'confirmed' %}disabled{% endif %}>Confirmed</option>
+                                    <option value="in_progress" {% if order.status == 'in_progress' %}disabled{% endif %}>In Progress</option>
+                                    <option value="completed" {% if order.status == 'completed' %}disabled{% endif %}>Completed</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-check"></i> Update
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i class="fas fa-shopping-bag fa-4x text-muted mb-3"></i>
+        <h4>No orders found</h4>
+        <p class="text-muted">
+            {% if status_filter != 'all' %}
+                No orders with status "{{ status_filter.replace('_', ' ').title() }}" found.
+            {% else %}
+                No customer orders yet. Orders will appear here when customers place them.
+            {% endif %}
+        </p>
+        {% if status_filter != 'all' %}
+        <a href="{{ url_for('admin.orders') }}" class="btn btn-outline-primary">
+            <i class="fas fa-list"></i> View All Orders
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

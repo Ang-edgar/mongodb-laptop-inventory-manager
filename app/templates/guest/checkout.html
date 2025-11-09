@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - Complete Your Order{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Checkout Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-credit-card"></i> Checkout Information</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="checkoutForm">
+                        <!-- Customer Information -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2"><i class="fas fa-user"></i> Customer Information</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="customer_name" class="form-label">Full Name *</label>
+                                        <input type="text" class="form-control" id="customer_name" name="customer_name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email Address *</label>
+                                        <input type="email" class="form-control" id="email" name="email" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="phone" class="form-label">Phone Number *</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="preferred_contact" class="form-label">Preferred Contact Method</label>
+                                        <select class="form-select" id="preferred_contact" name="preferred_contact">
+                                            <option value="email">Email</option>
+                                            <option value="phone">Phone</option>
+                                            <option value="text">Text Message</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delivery Information -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2"><i class="fas fa-truck"></i> Delivery Information</h5>
+                            <div class="mb-3">
+                                <label for="delivery_method" class="form-label">Delivery Method *</label>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="delivery_method" id="pickup" value="pickup" checked>
+                                            <label class="form-check-label" for="pickup">
+                                                <strong>Store Pickup</strong> (Free)<br>
+                                                <small class="text-muted">Pick up from our store location</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="delivery_method" id="delivery" value="delivery">
+                                            <label class="form-check-label" for="delivery">
+                                                <strong>Local Delivery</strong> ($25.00)<br>
+                                                <small class="text-muted">Delivery within 20 miles</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="deliveryAddress" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">Delivery Address</label>
+                                    <textarea class="form-control" id="address" name="address" rows="3" 
+                                              placeholder="Enter your full delivery address"></textarea>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="city" class="form-label">City</label>
+                                            <input type="text" class="form-control" id="city" name="city">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="state" class="form-label">State</label>
+                                            <input type="text" class="form-control" id="state" name="state" value="CA">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label for="zip_code" class="form-label">ZIP Code</label>
+                                            <input type="text" class="form-control" id="zip_code" name="zip_code">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Information -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2"><i class="fas fa-credit-card"></i> Payment Method</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="payment_method" id="cash" value="cash" checked>
+                                        <label class="form-check-label" for="cash">
+                                            <i class="fas fa-money-bill-wave text-success"></i> Cash on Pickup/Delivery
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="payment_method" id="bank_transfer" value="bank_transfer">
+                                        <label class="form-check-label" for="bank_transfer">
+                                            <i class="fas fa-university text-primary"></i> Bank Transfer
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Payment Instructions:</strong> We'll contact you with payment details after you place your order.
+                            </div>
+                        </div>
+
+                        <!-- Special Instructions -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2"><i class="fas fa-comment"></i> Special Instructions</h5>
+                            <div class="mb-3">
+                                <label for="notes" class="form-label">Order Notes (Optional)</label>
+                                <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                          placeholder="Any special requests or instructions for your order..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Order Actions -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('guest.cart') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Cart
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check"></i> Place Order
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Order Summary -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-receipt"></i> Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    {% if cart_items %}
+                    <!-- Cart Items -->
+                    <div class="mb-3">
+                        {% for item in cart_items %}
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                            <div class="flex-grow-1">
+                                <strong>{{ item.laptop.brand }} {{ item.laptop.model }}</strong><br>
+                                <small class="text-muted">
+                                    {{ item.laptop.cpu }} • {{ item.laptop.ram }} • {{ item.laptop.storage }}
+                                </small>
+                                {% if item.quantity > 1 %}
+                                <br><small class="text-info">Quantity: {{ item.quantity }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="text-end">
+                                <strong>${{ "%.2f"|format(item.total_price) }}</strong>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Pricing Breakdown -->
+                    <div class="border-top pt-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <span>${{ "%.2f"|format(cart_total) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2" id="deliveryFeeRow" style="display: none;">
+                            <span>Delivery Fee:</span>
+                            <span>$25.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tax (8.25%):</span>
+                            <span id="taxAmount">${{ "%.2f"|format(cart_total * 0.0825) }}</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between fs-5">
+                            <strong>Total:</strong>
+                            <strong id="totalAmount">${{ "%.2f"|format(cart_total * 1.0825) }}</strong>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-shopping-cart fa-3x mb-3"></i>
+                        <p>Your cart is empty</p>
+                        <a href="{{ url_for('guest.shop') }}" class="btn btn-primary">
+                            <i class="fas fa-shopping-bag"></i> Continue Shopping
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Security Notice -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6><i class="fas fa-shield-alt text-success"></i> Secure Checkout</h6>
+                    <small class="text-muted">
+                        Your personal information is protected and will only be used to process your order.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Handle delivery method change
+document.addEventListener('DOMContentLoaded', function() {
+    const pickupRadio = document.getElementById('pickup');
+    const deliveryRadio = document.getElementById('delivery');
+    const deliveryAddress = document.getElementById('deliveryAddress');
+    const deliveryFeeRow = document.getElementById('deliveryFeeRow');
+    const addressField = document.getElementById('address');
+    
+    // Initial state
+    updateDeliveryUI();
+    
+    // Add event listeners
+    pickupRadio.addEventListener('change', updateDeliveryUI);
+    deliveryRadio.addEventListener('change', updateDeliveryUI);
+    
+    function updateDeliveryUI() {
+        if (deliveryRadio.checked) {
+            deliveryAddress.style.display = 'block';
+            deliveryFeeRow.style.display = 'flex';
+            addressField.required = true;
+            updateTotal(true);
+        } else {
+            deliveryAddress.style.display = 'none';
+            deliveryFeeRow.style.display = 'none';
+            addressField.required = false;
+            updateTotal(false);
+        }
+    }
+    
+    function updateTotal(includeDelivery) {
+        const subtotal = {{ cart_total or 0 }};
+        const deliveryFee = includeDelivery ? 25.00 : 0;
+        const taxableAmount = subtotal + deliveryFee;
+        const tax = taxableAmount * 0.0825;
+        const total = taxableAmount + tax;
+        
+        document.getElementById('taxAmount').textContent = '$' + tax.toFixed(2);
+        document.getElementById('totalAmount').textContent = '$' + total.toFixed(2);
+    }
+});
+
+// Form validation
+document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+    const deliveryRadio = document.getElementById('delivery');
+    const addressField = document.getElementById('address');
+    
+    if (deliveryRadio.checked && !addressField.value.trim()) {
+        e.preventDefault();
+        alert('Please enter a delivery address.');
+        addressField.focus();
+        return false;
+    }
+    
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    submitBtn.disabled = true;
+});
+</script>
+{% endblock %}

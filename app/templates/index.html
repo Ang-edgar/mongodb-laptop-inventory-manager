@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Laptop Inventory Management - Home{% endblock %}
+
+{% block content %}
+<div class="jumbotron bg-primary text-white p-5 rounded mb-4">
+    <div class="container">
+        <h1 class="display-4">Welcome to Laptop Inventory</h1>
+        <p class="lead">Your one-stop shop for quality laptops with customization options</p>
+        <a class="btn btn-light btn-lg" href="{{ url_for('guest.shop') }}" role="button">
+            <i class="fas fa-shopping-bag"></i> Browse Laptops
+        </a>
+    </div>
+</div>
+
+{% if laptops %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">Featured Laptops</h2>
+    </div>
+    {% for laptop in laptops %}
+    <div class="col-md-4 mb-4">
+        <div class="card laptop-card h-100">
+            {% if laptop.image %}
+                <img src="data:image/jpeg;base64,{{ laptop.image }}" class="card-img-top laptop-image" alt="{{ laptop.brand }} {{ laptop.model }}">
+            {% else %}
+                <div class="card-img-top laptop-image bg-light d-flex align-items-center justify-content-center">
+                    <i class="fas fa-laptop fa-3x text-muted"></i>
+                </div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ laptop.brand }} {{ laptop.model }}</h5>
+                <p class="card-text">
+                    <small class="text-muted">{{ laptop.cpu }}</small><br>
+                    <strong>${{ "%.2f"|format(laptop.selling_price) }}</strong>
+                </p>
+                <a href="{{ url_for('guest.laptop_detail', laptop_id=laptop._id) }}" class="btn btn-primary">
+                    View Details
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="text-center mt-4">
+    <a href="{{ url_for('guest.shop') }}" class="btn btn-outline-primary btn-lg">
+        View All Laptops <i class="fas fa-arrow-right"></i>
+    </a>
+</div>
+{% else %}
+<div class="text-center">
+    <h3>No laptops available at the moment</h3>
+    <p class="text-muted">Please check back later!</p>
+</div>
+{% endif %}
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="text-center">
+            <i class="fas fa-laptop fa-3x text-primary mb-3"></i>
+            <h4>Quality Laptops</h4>
+            <p>Carefully selected and tested laptops for your needs</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="text-center">
+            <i class="fas fa-tools fa-3x text-primary mb-3"></i>
+            <h4>Customization</h4>
+            <p>Upgrade RAM and storage to match your requirements</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="text-center">
+            <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+            <h4>Warranty</h4>
+            <p>Comprehensive warranty coverage for peace of mind</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

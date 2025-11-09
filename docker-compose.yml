@@ -1,0 +1,38 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: lim_mongodb_mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: laptop_inventory
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
+    networks:
+      - laptop_network
+
+  flask-app:
+    build: .
+    container_name: lim_mongodb_flask
+    restart: unless-stopped
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/laptop_inventory
+      - SECRET_KEY=laptop-inventory-secret-key-2025
+      - FLASK_ENV=production
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+    volumes:
+      - ./app:/app
+    networks:
+      - laptop_network
+
+volumes:
+  mongodb_data:
+
+networks:
+  laptop_network:
+    driver: bridge

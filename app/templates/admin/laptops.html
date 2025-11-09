@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Laptops - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-laptop"></i> Manage Laptops</h2>
+    <a href="{{ url_for('admin.add_laptop') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add New Laptop
+    </a>
+</div>
+
+<!-- Filter Bar -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status Filter</label>
+                <select class="form-select" name="status" id="status" onchange="this.form.submit()">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
+                    <option value="available" {% if status_filter == 'available' %}selected{% endif %}>Available</option>
+                    <option value="sold" {% if status_filter == 'sold' %}selected{% endif %}>Sold</option>
+                    <option value="reserved" {% if status_filter == 'reserved' %}selected{% endif %}>Reserved</option>
+                </select>
+            </div>
+            <div class="col-md-9 d-flex align-items-end">
+                <span class="text-muted">{{ laptops|length }} laptops found</span>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Laptops Table -->
+{% if laptops %}
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Details</th>
+                        <th>Specs</th>
+                        <th>Pricing</th>
+                        <th>Status</th>
+                        <th>Serial #</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for laptop in laptops %}
+                    <tr>
+                        <td>
+                            {% if laptop.image %}
+                                <img src="data:image/jpeg;base64,{{ laptop.image }}" 
+                                     class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;"
+                                     alt="{{ laptop.brand }} {{ laptop.model }}">
+                            {% else %}
+                                <div class="bg-light d-flex align-items-center justify-content-center" 
+                                     style="width: 60px; height: 60px;">
+                                    <i class="fas fa-laptop text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ laptop.brand }} {{ laptop.model }}</strong><br>
+                            <small class="text-muted">{{ laptop.condition }}</small>
+                        </td>
+                        <td>
+                            <small>
+                                {{ laptop.cpu }}<br>
+                                {{ laptop.ram }} | {{ laptop.storage }}<br>
+                                {% if laptop.os %}{{ laptop.os }}{% endif %}
+                            </small>
+                        </td>
+                        <td>
+                            <div>
+                                <strong class="text-success">${{ "%.2f"|format(laptop.selling_price) }}</strong><br>
+                                <small class="text-muted">Cost: ${{ "%.2f"|format(laptop.purchase_price) }}</small><br>
+                                {% set profit = laptop.selling_price - laptop.purchase_price %}
+                                <small class="{% if profit > 0 %}text-success{% else %}text-danger{% endif %}">
+                                    Profit: ${{ "%.2f"|format(profit) }}
+                                </small>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if laptop.status == 'available' else 'secondary' if laptop.status == 'sold' else 'warning' }}">
+                                {{ (laptop.status or 'unknown').title() }}
+                            </span>
+                        </td>
+                        <td>
+                            <code>{{ laptop.serial_number }}</code>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{{ url_for('admin.edit_laptop', laptop_id=laptop._id) }}" 
+                                   class="btn btn-outline-primary" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger" 
+                                        onclick="confirmDelete('{{ laptop._id }}', '{{ laptop.brand }} {{ laptop.model }}')"
+                                        title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i class="fas fa-laptop fa-4x text-muted mb-3"></i>
+        <h4>No laptops found</h4>
+        <p class="text-muted">
+            {% if status_filter != 'all' %}
+                No laptops with status "{{ status_filter }}" found.
+            {% else %}
+                Start by adding your first laptop to the inventory.
+            {% endif %}
+        </p>
+        <a href="{{ url_for('admin.add_laptop') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add First Laptop
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="deleteLaptopName"></strong>?</p>
+                <p class="text-muted">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDelete(laptopId, laptopName) {
+    document.getElementById('deleteLaptopName').textContent = laptopName;
+    document.getElementById('deleteForm').action = '/admin/laptops/' + laptopId + '/delete';
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

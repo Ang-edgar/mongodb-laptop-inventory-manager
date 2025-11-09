@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}{{ laptop.brand }} {{ laptop.model }} - Laptop Details{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-6">
+            <!-- Laptop Image -->
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if laptop.image %}
+                    <img src="data:image/jpeg;base64,{{ laptop.image }}" 
+                         alt="{{ laptop.brand }} {{ laptop.model }}" 
+                         class="img-fluid rounded shadow-sm" style="max-height: 400px;">
+                    {% else %}
+                    <div class="bg-light p-5 rounded">
+                        <i class="fas fa-laptop fa-5x text-muted"></i>
+                        <p class="text-muted mt-3">No image available</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <!-- Laptop Information -->
+            <div class="card h-100">
+                <div class="card-header">
+                    <h3 class="mb-0">{{ laptop.brand }} {{ laptop.model }}</h3>
+                    <p class="text-muted mb-0">Serial: {{ laptop.serial_number or 'N/A' }}</p>
+                </div>
+                <div class="card-body">
+                    <!-- Specifications -->
+                    <div class="mb-4">
+                        <h5><i class="fas fa-cogs"></i> Specifications</h5>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <ul class="list-unstyled">
+                                    <li><strong>Processor:</strong> {{ laptop.cpu or 'N/A' }}</li>
+                                    <li><strong>RAM:</strong> {{ laptop.ram or 'N/A' }}</li>
+                                    <li><strong>Storage:</strong> {{ laptop.storage or 'N/A' }}</li>
+                                </ul>
+                            </div>
+                            <div class="col-sm-6">
+                                <ul class="list-unstyled">
+                                    <li><strong>Screen:</strong> {{ laptop.screen_size or 'N/A' }}</li>
+                                    <li><strong>Graphics:</strong> {{ laptop.graphics or 'Integrated' }}</li>
+                                    <li><strong>OS:</strong> {{ laptop.os or 'N/A' }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Condition and Status -->
+                    <div class="mb-4">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <h6>Condition</h6>
+                                <span class="badge bg-{{ 'success' if laptop.condition == 'New' else 'primary' if laptop.condition == 'Like New' else 'info' }} fs-6">
+                                    {{ laptop.condition or 'N/A' }}
+                                </span>
+                            </div>
+                            <div class="col-sm-6">
+                                <h6>Availability</h6>
+                                <span class="badge bg-{{ 'success' if laptop.status == 'available' else 'secondary' }} fs-6">
+                                    {% if laptop.status == 'available' %}
+                                        In Stock
+                                    {% elif laptop.status == 'sold' %}
+                                        Sold Out
+                                    {% else %}
+                                        {{ (laptop.status or 'unknown').title() }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    {% if laptop.description %}
+                    <div class="mb-4">
+                        <h6>Description</h6>
+                        <p class="text-muted">{{ laptop.description }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Price and Actions -->
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h4 class="text-primary mb-0">${{ "%.2f"|format(laptop.selling_price or 0) }}</h4>
+                                {% if laptop.purchase_price and laptop.selling_price and laptop.purchase_price != laptop.selling_price %}
+                                <small class="text-muted">
+                                    <del>${{ "%.2f"|format(laptop.purchase_price) }}</del>
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if laptop.status == 'available' %}
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary btn-lg" onclick="addToCart('{{ laptop._id }}')">
+                                <i class="fas fa-cart-plus"></i> Add to Cart
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="contactSeller()">
+                                <i class="fas fa-envelope"></i> Contact Seller
+                            </button>
+                        </div>
+                        {% else %}
+                        <div class="d-grid">
+                            <button class="btn btn-secondary btn-lg" disabled>
+                                <i class="fas fa-times"></i> Currently Unavailable
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Additional Information -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Additional Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Purchase Information</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Date Purchased:</strong> {{ laptop.date_purchased.strftime('%B %d, %Y') if laptop.date_purchased else 'N/A' }}</li>
+                                <li><strong>Condition:</strong> {{ laptop.condition or 'N/A' }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Technical Details</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Brand:</strong> {{ laptop.brand or 'N/A' }}</li>
+                                <li><strong>Model:</strong> {{ laptop.model or 'N/A' }}</li>
+                                <li><strong>Serial Number:</strong> {{ laptop.serial_number or 'N/A' }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Warranty & Support</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Warranty:</strong> 30-day return policy</li>
+                                <li><strong>Support:</strong> Email support included</li>
+                                <li><strong>Shipping:</strong> Free local delivery</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('guest.shop') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Shop
+                </a>
+                <div>
+                    {% if similar_laptops %}
+                    <a href="{{ url_for('guest.shop') }}?brand={{ laptop.brand }}" class="btn btn-outline-primary">
+                        <i class="fas fa-search"></i> Similar {{ laptop.brand }} Laptops
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Modal -->
+<div class="modal fade" id="contactModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Contact Seller</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Interested in this laptop? Get in touch with us!</p>
+                <div class="mb-3">
+                    <strong>{{ laptop.brand }} {{ laptop.model }}</strong><br>
+                    <small class="text-muted">Serial: {{ laptop.serial_number or 'N/A' }}</small>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    You can contact us through the order lookup system or visit our physical store.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('guest.order_lookup') }}" class="btn btn-primary">Order Lookup</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function addToCart(laptopId) {
+    // Add to cart functionality
+    fetch('/shop/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            laptop_id: laptopId,
+            quantity: 1
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            const toast = document.createElement('div');
+            toast.className = 'toast show position-fixed top-0 end-0 m-3';
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                <div class="toast-header bg-success text-white">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong class="me-auto">Success</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    Laptop added to cart successfully!
+                </div>
+            `;
+            document.body.appendChild(toast);
+            
+            // Auto-remove toast after 3 seconds
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 3000);
+        } else {
+            alert('Error adding to cart: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error adding to cart');
+    });
+}
+
+function contactSeller() {
+    new bootstrap.Modal(document.getElementById('contactModal')).show();
+}
+</script>
+{% endblock %}

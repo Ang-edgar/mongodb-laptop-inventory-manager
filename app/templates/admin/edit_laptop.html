@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Laptop - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-edit"></i> Edit Laptop</h2>
+    <a href="{{ url_for('admin.laptops') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Laptops
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Laptop Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="brand" class="form-label">Brand *</label>
+                                <select class="form-select" id="brand" name="brand" required>
+                                    <option value="">Select Brand</option>
+                                    <option value="Dell" {{ 'selected' if laptop.brand == 'Dell' else '' }}>Dell</option>
+                                    <option value="HP" {{ 'selected' if laptop.brand == 'HP' else '' }}>HP</option>
+                                    <option value="Lenovo" {{ 'selected' if laptop.brand == 'Lenovo' else '' }}>Lenovo</option>
+                                    <option value="ASUS" {{ 'selected' if laptop.brand == 'ASUS' else '' }}>ASUS</option>
+                                    <option value="Acer" {{ 'selected' if laptop.brand == 'Acer' else '' }}>Acer</option>
+                                    <option value="Apple" {{ 'selected' if laptop.brand == 'Apple' else '' }}>Apple</option>
+                                    <option value="MSI" {{ 'selected' if laptop.brand == 'MSI' else '' }}>MSI</option>
+                                    <option value="Samsung" {{ 'selected' if laptop.brand == 'Samsung' else '' }}>Samsung</option>
+                                    <option value="Other" {{ 'selected' if laptop.brand == 'Other' else '' }}>Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="model" class="form-label">Model *</label>
+                                <input type="text" class="form-control" id="model" name="model" 
+                                       value="{{ laptop.model or '' }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="cpu" class="form-label">Processor *</label>
+                                <input type="text" class="form-control" id="cpu" name="cpu" 
+                                       value="{{ laptop.cpu or '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ram" class="form-label">RAM *</label>
+                                <select class="form-select" id="ram" name="ram" required>
+                                    <option value="">Select RAM</option>
+                                    <option value="4GB" {{ 'selected' if laptop.ram == '4GB' else '' }}>4GB</option>
+                                    <option value="8GB" {{ 'selected' if laptop.ram == '8GB' else '' }}>8GB</option>
+                                    <option value="16GB" {{ 'selected' if laptop.ram == '16GB' else '' }}>16GB</option>
+                                    <option value="32GB" {{ 'selected' if laptop.ram == '32GB' else '' }}>32GB</option>
+                                    <option value="64GB" {{ 'selected' if laptop.ram == '64GB' else '' }}>64GB</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="storage" class="form-label">Storage *</label>
+                                <select class="form-select" id="storage" name="storage" required>
+                                    <option value="">Select Storage</option>
+                                    <option value="256GB SSD" {{ 'selected' if laptop.storage == '256GB SSD' else '' }}>256GB SSD</option>
+                                    <option value="512GB SSD" {{ 'selected' if laptop.storage == '512GB SSD' else '' }}>512GB SSD</option>
+                                    <option value="1TB SSD" {{ 'selected' if laptop.storage == '1TB SSD' else '' }}>1TB SSD</option>
+                                    <option value="2TB SSD" {{ 'selected' if laptop.storage == '2TB SSD' else '' }}>2TB SSD</option>
+                                    <option value="1TB HDD" {{ 'selected' if laptop.storage == '1TB HDD' else '' }}>1TB HDD</option>
+                                    <option value="2TB HDD" {{ 'selected' if laptop.storage == '2TB HDD' else '' }}>2TB HDD</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="graphics" class="form-label">Graphics Card</label>
+                                <input type="text" class="form-control" id="graphics" name="graphics" 
+                                       value="{{ laptop.graphics or '' }}" placeholder="e.g., NVIDIA GTX 1650">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="screen_size" class="form-label">Screen Size *</label>
+                                <select class="form-select" id="screen_size" name="screen_size" required>
+                                    <option value="">Select Screen Size</option>
+                                    <option value="13.3" {{ 'selected' if laptop.screen_size and laptop.screen_size.startswith('13.3') else '' }}>13.3"</option>
+                                    <option value="14" {{ 'selected' if laptop.screen_size and laptop.screen_size.startswith('14') else '' }}>14"</option>
+                                    <option value="15.6" {{ 'selected' if laptop.screen_size and laptop.screen_size.startswith('15.6') else '' }}>15.6"</option>
+                                    <option value="17.3" {{ 'selected' if laptop.screen_size and laptop.screen_size.startswith('17.3') else '' }}>17.3"</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="os" class="form-label">Operating System *</label>
+                                <select class="form-select" id="os" name="os" required>
+                                    <option value="">Select OS</option>
+                                    <option value="Windows 11" {{ 'selected' if laptop.os == 'Windows 11' else '' }}>Windows 11</option>
+                                    <option value="Windows 10" {{ 'selected' if laptop.os == 'Windows 10' else '' }}>Windows 10</option>
+                                    <option value="macOS" {{ 'selected' if laptop.os == 'macOS' else '' }}>macOS</option>
+                                    <option value="Ubuntu" {{ 'selected' if laptop.os == 'Ubuntu' else '' }}>Ubuntu</option>
+                                    <option value="Linux" {{ 'selected' if laptop.os == 'Linux' else '' }}>Linux</option>
+                                    <option value="Chrome OS" {{ 'selected' if laptop.os == 'Chrome OS' else '' }}>Chrome OS</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="purchase_price" class="form-label">Purchase Price ($) *</label>
+                                <input type="number" class="form-control" id="purchase_price" name="purchase_price" 
+                                       step="0.01" min="0" value="{{ laptop.purchase_price or '' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="selling_price" class="form-label">Selling Price ($) *</label>
+                                <input type="number" class="form-control" id="selling_price" name="selling_price" 
+                                       step="0.01" min="0" value="{{ laptop.selling_price or '' }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="condition" class="form-label">Condition *</label>
+                                <select class="form-select" id="condition" name="condition" required>
+                                    <option value="">Select Condition</option>
+                                    <option value="New" {{ 'selected' if laptop.condition == 'New' else '' }}>New</option>
+                                    <option value="Like New" {{ 'selected' if laptop.condition == 'Like New' else '' }}>Like New</option>
+                                    <option value="Good" {{ 'selected' if laptop.condition == 'Good' else '' }}>Good</option>
+                                    <option value="Fair" {{ 'selected' if laptop.condition == 'Fair' else '' }}>Fair</option>
+                                    <option value="Refurbished" {{ 'selected' if laptop.condition == 'Refurbished' else '' }}>Refurbished</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status *</label>
+                                <select class="form-select" id="status" name="status" required>
+                                    <option value="">Select Status</option>
+                                    <option value="available" {{ 'selected' if laptop.status == 'available' else '' }}>Available</option>
+                                    <option value="sold" {{ 'selected' if laptop.status == 'sold' else '' }}>Sold</option>
+                                    <option value="maintenance" {{ 'selected' if laptop.status == 'maintenance' else '' }}>Maintenance</option>
+                                    <option value="reserved" {{ 'selected' if laptop.status == 'reserved' else '' }}>Reserved</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label for="date_purchased" class="form-label">Date Purchased *</label>
+                                <input type="date" class="form-control" id="date_purchased" name="date_purchased" 
+                                       value="{{ laptop.date_purchased.strftime('%Y-%m-%d') if laptop.date_purchased else '' }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                                  placeholder="Additional details about the laptop">{{ laptop.description or '' }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Update Image</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                        <div class="form-text">Leave empty to keep current image</div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Laptop
+                        </button>
+                        <a href="{{ url_for('admin.laptops') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Current Image -->
+        {% if laptop.image %}
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Current Image</h6>
+            </div>
+            <div class="card-body text-center">
+                <img src="data:image/jpeg;base64,{{ laptop.image }}" 
+                     alt="{{ laptop.model }}" class="img-fluid rounded">
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick Info -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">Quick Info</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li><strong>Laptop ID:</strong> {{ laptop._id }}</li>
+                    <li><strong>Created:</strong> {{ laptop.created_at.strftime('%B %d, %Y') if laptop.created_at else 'N/A' }}</li>
+                    <li><strong>Last Updated:</strong> {{ laptop.updated_at.strftime('%B %d, %Y') if laptop.updated_at else 'N/A' }}</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Delete Section -->
+        <div class="card mt-3 border-danger">
+            <div class="card-header bg-danger text-white">
+                <h6 class="mb-0">Danger Zone</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Once you delete this laptop, there is no going back.</p>
+                <button type="button" class="btn btn-outline-danger btn-sm" 
+                        onclick="confirmDelete('{{ laptop._id }}', '{{ laptop.brand }} {{ laptop.model }}')">
+                    <i class="fas fa-trash"></i> Delete Laptop
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this laptop?</p>
+                <p><strong id="deleteLaptopName"></strong></p>
+                <p class="text-danger"><strong>This action cannot be undone.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" style="display: inline;" id="deleteForm">
+                    <button type="submit" class="btn btn-danger">Delete Laptop</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(laptopId, laptopName) {
+    document.getElementById('deleteLaptopName').textContent = laptopName;
+    document.getElementById('deleteForm').action = '/admin/laptops/' + laptopId + '/delete';
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}
