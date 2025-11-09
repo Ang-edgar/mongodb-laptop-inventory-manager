@@ -1,138 +1,121 @@
-# MongoDB Laptop Inventory Management System
+# MongoDB Laptop Inventory Manager
 
-A modern web-based laptop inventory management system built with Flask and MongoDB. This application provides comprehensive tools for managing laptop inventory, spare parts, customer orders, and warranties.
+A web-based inventory management system for laptop repair shops and resellers. Built with Flask and MongoDB.
 
-## 🚀 Features
+## Features
 
-### Core Functionality
-- **MongoDB Integration**: Modern NoSQL database for flexible data storage
-- **Dual Access Modes**: Guest shopping interface and admin management panel
-- **Image Management**: Base64 image storage directly in MongoDB
-- **Smart Serial Numbers**: Auto-generated serial numbers based on brand and date
+### For Customers
+- Browse available laptops without needing an account
+- Customize laptops with spare parts (RAM, storage upgrades)
+- Shopping cart with real-time pricing
+- Order tracking by email and order ID
 
-### Inventory Management
-- **Laptop Tracking**: Complete laptop lifecycle from purchase to sale
-- **Spare Parts System**: RAM and storage parts with pricing
-- **Bulk Operations**: Multi-select for batch operations
-- **Status Tracking**: Available, sold, reserved, etc.
+### For Admins
+- Dashboard with inventory stats
+- Add and edit laptop listings with images
+- Manage spare parts inventory
+- Process orders through workflow stages
+- Track warranties with expiration dates
 
-### Customer Features
-- **Guest Shopping**: Browse laptops without login required
-- **Laptop Customization**: Add spare parts upgrades with real-time pricing
-- **Shopping Cart**: Multi-laptop cart with customizations
-- **Order Tracking**: Check order status by email and order ID
+### Technical
+- MongoDB backend for flexible schema
+- Base64 image storage
+- Auto-generated serial numbers
+- Session-based shopping cart
+- Simple authentication system
 
-### Admin Features
-- **Dashboard**: Real-time statistics and recent activity
-- **Order Management**: Process orders through workflow (unconfirmed → confirmed → in progress → completed)
-- **Warranty Tracking**: Color-coded warranty countdown timers
-- **User Management**: Admin authentication system
+## Tech Stack
 
-## 🛠 Technology Stack
+- Backend: Flask + PyMongo
+- Database: MongoDB
+- Frontend: HTML/CSS/JavaScript with Bootstrap
+- Deployment: Docker + Docker Compose
 
-- **Backend**: Flask (Python)
-- **Database**: MongoDB with PyMongo
-- **Frontend**: HTML5, CSS3, JavaScript (no heavy frameworks)
-- **Containerization**: Docker & Docker Compose
-- **Image Storage**: Base64 encoding in MongoDB
+## Installation
 
-## 🚀 Quick Start
+### Quick Start (Docker)
 
-### Prerequisites
-- Docker and Docker Compose
-- Git
+**Prerequisites:** Docker and Docker Compose installed
 
-### Installation
-
-1. **Clone the repository**
+1. Clone the repo
    ```bash
    git clone https://github.com/Ang-edgar/mongodb-laptop-inventory-manager.git
    cd mongodb-laptop-inventory-manager
    ```
 
-2. **Run automated setup**
-   ```bash
-   ./setup.sh
-   ```
-   
-   Or manually:
-
-3. **Configure environment**
+2. Copy environment template
    ```bash
    cp .env.example .env
-   # Edit .env if needed
    ```
 
-4. **Start with Docker Compose**
+3. Start containers
    ```bash
    docker-compose up -d
    ```
 
-5. **Initialize database**
+4. Initialize database
    ```bash
    docker-compose exec web python scripts/init_db.py
    ```
 
-6. **Access the application**
-   - Open http://localhost:5000 in your browser
-   - Default admin login: `admin` / `admin123`
-   - ⚠️ **Change the default password immediately!**
+5. Open http://localhost:5000
+   - Default login: `admin` / `admin123` (change this!)
 
-### Manual Installation (Development)
+### Alternative: Run setup script
+```bash
+./setup.sh
+```
+The script will guide you through Docker or manual setup.
 
-1. **Install MongoDB**
+### Manual Setup (No Docker)
+
+**Prerequisites:** Python 3.10+, MongoDB 5.0+
+
+1. Clone and enter directory
+   ```bash
+   git clone https://github.com/Ang-edgar/mongodb-laptop-inventory-manager.git
+   cd mongodb-laptop-inventory-manager
+   ```
+
+2. Install MongoDB if needed
    ```bash
    # Ubuntu/Debian
    sudo apt-get install mongodb
-
+   
    # macOS
    brew install mongodb-community
    brew services start mongodb-community
    ```
 
-2. **Clone and setup**
-   ```bash
-   git clone https://github.com/Ang-edgar/mongodb-laptop-inventory-manager.git
-   cd mongodb-laptop-inventory-manager
-   ```
-
-3. **Create virtual environment**
+3. Setup Python environment
    ```bash
    python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-4. **Install Python dependencies**
-   ```bash
+   source venv/bin/activate  # Windows: venv\Scripts\activate
    pip install -r requirements.txt
    ```
 
-5. **Configure environment**
+4. Configure environment
    ```bash
    cp .env.example .env
-   # Edit .env with your MongoDB URI and SECRET_KEY
+   # Edit .env with your settings
    ```
 
-6. **Initialize database**
+5. Initialize database
    ```bash
    python scripts/init_db.py
    ```
 
-7. **Run the application**
+6. Run application
    ```bash
    cd app
    python __init__.py
    ```
 
-8. **Access the application**
-   - Open http://localhost:5000 in your browser
-   - Default admin login: `admin` / `admin123`
+Application runs on http://localhost:5000
 
-## 📊 Database Schema
+## Database Schema
 
-### Collections Structure
-
-**Laptops Collection**
+### Laptops Collection
 ```javascript
 {
   _id: ObjectId,
@@ -148,29 +131,15 @@ A modern web-based laptop inventory management system built with Flask and Mongo
   selling_price: 1200.00,
   date_purchased: ISODate,
   date_sold: ISODate,
-  status: "available", // available, sold, reserved
+  status: "available",
   description: "...",
-  image: "base64_encoded_string",
-  image_filename: "laptop.jpg",
+  image: "base64_string",
   created_at: ISODate,
   updated_at: ISODate
 }
 ```
 
-**Spare Parts Collection**
-```javascript
-{
-  _id: ObjectId,
-  name: "Corsair Vengeance 16GB DDR4",
-  type: "RAM", // RAM, Storage
-  price: 89.99,
-  quantity: 5,
-  description: "...",
-  created_at: ISODate
-}
-```
-
-**Orders Collection**
+### Orders Collection
 ```javascript
 {
   _id: ObjectId,
@@ -178,199 +147,141 @@ A modern web-based laptop inventory management system built with Flask and Mongo
   customer_name: "John Doe",
   email: "john@example.com",
   phone: "+1234567890",
-  address: "123 Main St, City, State",
-  status: "unconfirmed", // unconfirmed, confirmed, in_progress, completed
+  address: "123 Main St",
+  status: "unconfirmed",
   items: [
     {
       laptop_id: ObjectId,
       laptop_brand: "Dell",
       laptop_model: "Latitude 7420",
       base_price: 1200.00,
-      spare_parts: [
-        {
-          part_id: ObjectId,
-          name: "32GB RAM Upgrade",
-          price: 150.00
-        }
-      ],
+      spare_parts: [{part_id: ObjectId, name: "32GB RAM", price: 150.00}],
       total_price: 1350.00
     }
   ],
   total_amount: 1350.00,
-  created_at: ISODate,
-  updated_at: ISODate
-}
-```
-
-**Warranties Collection**
-```javascript
-{
-  _id: ObjectId,
-  laptop_id: ObjectId,
-  customer_name: "John Doe",
-  start_date: ISODate,
-  end_date: ISODate,
-  duration_months: 12,
-  description: "Standard warranty",
   created_at: ISODate
 }
 ```
 
-**Users Collection**
-```javascript
-{
-  _id: ObjectId,
-  username: "admin",
-  password: "hashed_password",
-  role: "admin",
-  created_at: ISODate
-}
-```
+The database auto-creates indexes for serial numbers, order IDs, and email lookups.
 
-## 🔧 Configuration
+## Configuration
 
-### Environment Variables
-
-Create a `.env` file in the root directory (or copy from `.env.example`):
+Copy `.env.example` to `.env` and update:
 
 ```env
-# MongoDB Configuration
+# MongoDB
 MONGODB_URI=mongodb://localhost:27017/laptop_inventory
-# For MongoDB Atlas: mongodb+srv://username:password@cluster.mongodb.net/laptop_inventory
+# For Atlas cloud: mongodb+srv://user:pass@cluster.mongodb.net/laptop_inventory
 
-# Flask Configuration
-SECRET_KEY=your-very-secret-key-here
+# Flask
+SECRET_KEY=generate-random-key-here
 FLASK_ENV=development
 PORT=5000
 
-# Admin Credentials (CHANGE IN PRODUCTION!)
+# Default admin (change these!)
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=admin123
 ```
 
-**Important:** 
-- Copy `.env.example` to `.env` and update values
-- Generate a strong SECRET_KEY: `openssl rand -hex 32`
-- Change ADMIN_PASSWORD before deploying
+Generate a secure SECRET_KEY:
+```bash
+openssl rand -hex 32
+```
 
-### MongoDB Indexes
+## Usage
 
-The application automatically creates indexes for:
-- Laptop serial numbers (unique)
-- Laptop status and brand
-- Order IDs and email addresses
-- Warranty laptop IDs and end dates
-- Spare parts name and type
+### As a Customer
+1. Browse available laptops at `/shop`
+2. Click laptop to view details and add spare parts
+3. Add to cart and checkout
+4. Track order at `/track-order` with email and order ID
 
-## 🎯 Usage Guide
+### As Admin
+1. Login at `/admin` (default: admin/admin123)
+2. Add laptops with images and specs
+3. Manage spare parts inventory
+4. Process orders: unconfirmed → confirmed → in progress → completed
+5. Track warranties
 
-### Admin Workflow
+## Deployment
 
-1. **Login**: Use admin credentials to access management features
-2. **Add Laptops**: Upload laptop details with images
-3. **Manage Spare Parts**: Add RAM and storage upgrades with pricing
-4. **Process Orders**: Move orders through confirmation workflow
-5. **Track Warranties**: Monitor warranty expiration dates
-
-### Customer Workflow
-
-1. **Browse Shop**: View available laptops without login
-2. **Customize Laptop**: Select upgrades and see price changes
-3. **Add to Cart**: Build cart with multiple customized laptops
-4. **Checkout**: Provide details and place order
-5. **Track Order**: Check status using email and order ID
-
-## 🚀 Deployment
-
-For detailed deployment instructions including:
-- VPS deployment
-- MongoDB Atlas (cloud)
-- Raspberry Pi setup
-- Production security
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed guides on:
+- VPS deployment (DigitalOcean, Linode, AWS)
+- MongoDB Atlas cloud setup
+- Raspberry Pi installation
+- Production security checklist
 - Backup strategies
 
-**See [DEPLOYMENT.md](DEPLOYMENT.md) for comprehensive guides.**
+### Quick Production Notes
 
-### Quick Production Setup
+For production use:
+- Change default admin password
+- Generate strong SECRET_KEY
+- Use MongoDB Atlas or enable authentication
+- Setup HTTPS with Nginx/Caddy
+- Configure regular backups
 
-1. **Update Docker Compose for production**
-   ```yaml
-   # docker-compose.yml
-   environment:
-     - FLASK_ENV=production
-     - MONGODB_URI=mongodb://mongodb:27017/laptop_inventory
-   ```
+Example production docker-compose:
+```yaml
+environment:
+  - FLASK_ENV=production
+  - MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/db
+```
 
-2. **Use external MongoDB (recommended)**
-   ```bash
-   # .env file
-   MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/laptop_inventory
-   ```
+## Troubleshooting
 
-3. **Enable MongoDB authentication**
-   ```yaml
-   # docker-compose.yml - MongoDB service
-   environment:
-     MONGO_INITDB_ROOT_USERNAME: admin
-     MONGO_INITDB_ROOT_PASSWORD: strongpassword
-   ```
-
-### Security Checklist
-
-- ✅ Change default admin credentials
-- ✅ Generate strong SECRET_KEY
-- ✅ Enable MongoDB authentication
-- ✅ Use HTTPS in production (Nginx/Caddy)
-- ✅ Setup regular database backups
-- ✅ Configure firewall rules
-- ✅ Keep dependencies updated
-
-## 🔄 Migration from SQLite Version
-
-If migrating from the SQLite version:
-
-1. **Export data from SQLite**
-2. **Transform data structure for MongoDB**
-3. **Import using MongoDB tools**
-4. **Update image storage format**
-
-## 📚 Additional Resources
-
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Comprehensive deployment guide
-- **[scripts/init_db.py](scripts/init_db.py)** - Database initialization script
-- **[setup.sh](setup.sh)** - Automated installation script
-
-## 🐛 Troubleshooting
-
-### MongoDB Connection Issues
+**MongoDB connection issues:**
 ```bash
-# Check MongoDB is running
-docker-compose ps
-
-# View MongoDB logs
 docker-compose logs mongodb
-
-# Test connection
 docker-compose exec mongodb mongosh --eval "db.adminCommand('ping')"
 ```
 
-### Application Errors
+**Application errors:**
 ```bash
-# View application logs
 docker-compose logs web
-
-# Restart application
 docker-compose restart web
 ```
 
-### Port Already in Use
+**Port 5000 already in use:**
 ```bash
-# Find process using port 5000
 sudo lsof -i :5000
-
-# Or change port in .env file
-PORT=8080
+# Or change PORT in .env
 ```
+
+## Project Structure
+
+```
+mongodb-laptop-inventory-manager/
+├── app/
+│   ├── __init__.py           # Flask app factory
+│   ├── models/
+│   │   └── database.py       # MongoDB models
+│   ├── routes/
+│   │   ├── main.py           # Homepage
+│   │   ├── admin.py          # Admin panel routes
+│   │   ├── auth.py           # Authentication
+│   │   └── guest.py          # Shop, cart, checkout
+│   └── templates/            # Jinja2 templates
+├── scripts/
+│   └── init_db.py           # Database initialization
+├── docker-compose.yml
+├── Dockerfile
+└── requirements.txt
+```
+
+## Contributing
+
+Fork the repo, make changes, and submit a pull request.
+
+## License
+
+MIT License - see LICENSE file
+
+## Author
+
+Edgar - [@Ang-edgar](https://github.com/Ang-edgar)
 
 ## 🤝 Contributing
 
