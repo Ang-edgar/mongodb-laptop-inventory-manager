@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Track Your Order</h2>
+    
+    <div class="card mt-4">
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('track_order') }}">
+                <div class="mb-3">
+                    <label for="order_id" class="form-label">Order ID</label>
+                    <input type="text" class="form-control" id="order_id" name="order_id" 
+                           placeholder="Enter your order ID" required>
+                    <small class="form-text text-muted">
+                        You can find your order ID in the confirmation email
+                    </small>
+                </div>
+                <button type="submit" class="btn btn-primary">Track Order</button>
+            </form>
+        </div>
+    </div>
+
+    {% if order %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h4>Order #{{ order._id }}</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Customer Information</h5>
+                    <p><strong>Name:</strong> {{ order.customer_name }}</p>
+                    <p><strong>Email:</strong> {{ order.customer_email }}</p>
+                    <p><strong>Phone:</strong> {{ order.customer_phone }}</p>
+                    <p><strong>Address:</strong> {{ order.delivery_address }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h5>Order Status</h5>
+                    <p>
+                        <span class="badge 
+                        {% if order.status == 'completed' %}bg-success
+                        {% elif order.status == 'processing' %}bg-warning
+                        {% elif order.status == 'cancelled' %}bg-danger
+                        {% else %}bg-info{% endif %}">
+                            {{ order.status|upper }}
+                        </span>
+                    </p>
+                    <p><strong>Order Date:</strong> {{ order.order_date.strftime('%Y-%m-%d %H:%M') if order.order_date else 'N/A' }}</p>
+                    <p><strong>Total Amount:</strong> KES {{ "{:,.2f}".format(order.total_amount) }}</p>
+                </div>
+            </div>
+
+            <hr>
+
+            <h5>Order Items</h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Type</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items %}
+                        <tr>
+                            <td>
+                                {% if item.type == 'laptop' %}
+                                    {{ item.brand }} {{ item.model }}
+                                {% elif item.type == 'spare_part' %}
+                                    {{ item.name }}
+                                {% else %}
+                                    {{ item.name }}
+                                {% endif %}
+                            </td>
+                            <td>{{ item.type|title }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>KES {{ "{:,.2f}".format(item.price) }}</td>
+                            <td>KES {{ "{:,.2f}".format(item.price * item.quantity) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="4" class="text-end">Total:</th>
+                            <th>KES {{ "{:,.2f}".format(order.total_amount) }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% elif error %}
+    <div class="alert alert-danger mt-4">
+        {{ error }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

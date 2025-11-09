@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: lim_mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - lim_network
+
+  # Admin Backend (with API and admin panel)
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lim_admin
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/laptop_inventory
+      - SECRET_KEY=${SECRET_KEY:-admin-secret-key-change-me}
+      - FLASK_ENV=${FLASK_ENV:-development}
+    depends_on:
+      - mongodb
+    networks:
+      - lim_network
+    volumes:
+      - ./app:/app/app
+
+  # Guest Storefront (connects to admin API)
+  guest:
+    build:
+      context: ./guest-app
+      dockerfile: Dockerfile
+    container_name: lim_guest
+    restart: always
+    ports:
+      - "5001:5001"
+    environment:
+      - ADMIN_API_URL=http://admin:5000/api
+      - SECRET_KEY=${GUEST_SECRET_KEY:-guest-secret-key-change-me}
+      - FLASK_ENV=${FLASK_ENV:-development}
+    depends_on:
+      - admin
+    networks:
+      - lim_network
+    volumes:
+      - ./guest-app:/app
+
+networks:
+  lim_network:
+    driver: bridge
+
+volumes:
+  mongodb_data:

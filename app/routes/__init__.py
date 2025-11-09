@@ -1,4 +1,4 @@
 # Routes package
-from . import main, auth, admin, guest
+from . import main, auth, admin, guest, api
 
-__all__ = ['main', 'auth', 'admin', 'guest']
+__all__ = ['main', 'auth', 'admin', 'guest', 'api']

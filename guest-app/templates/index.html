@@ -7,7 +7,7 @@
     <div class="container">
         <h1 class="display-4">Welcome to Laptop Inventory</h1>
         <p class="lead">Your one-stop shop for quality laptops with customization options</p>
-        <a class="btn btn-light btn-lg" href="{{ url_for('guest.shop') }}" role="button">
+        <a class="btn btn-light btn-lg" href="{{ url_for('shop') }}" role="button">
             <i class="fas fa-shopping-bag"></i> Browse Laptops
         </a>
     </div>
@@ -34,7 +34,7 @@
                     <small class="text-muted">{{ laptop.cpu }}</small><br>
                     <strong>${{ "%.2f"|format(laptop.selling_price) }}</strong>
                 </p>
-                <a href="{{ url_for('guest.laptop_detail', laptop_id=laptop._id) }}" class="btn btn-primary">
+                <a href="{{ url_for('laptop_detail', laptop_id=laptop._id) }}" class="btn btn-primary">
                     View Details
                 </a>
             </div>
@@ -44,7 +44,7 @@
 </div>
 
 <div class="text-center mt-4">
-    <a href="{{ url_for('guest.shop') }}" class="btn btn-outline-primary btn-lg">
+    <a href="{{ url_for('shop') }}" class="btn btn-outline-primary btn-lg">
         View All Laptops <i class="fas fa-arrow-right"></i>
     </a>
 </div>

@@ -1,39 +1,55 @@
 # MongoDB Laptop Inventory Manager
 
-A web-based inventory management system for laptop repair shops and resellers. Built with Flask and MongoDB.
+A modern, cloud-native inventory management system for laptop repair shops and resellers. Built with microservices architecture using Flask, MongoDB, and JWT authentication.
 
 ## Features
 
 ### For Customers
-- Browse available laptops without needing an account
+- User registration and authentication (JWT-based)
+- Browse laptops with personalized experience
 - Customize laptops with spare parts (RAM, storage upgrades)
 - Shopping cart with real-time pricing
-- Order tracking by email and order ID
+- Order tracking and history
+- Secure account management
 
 ### For Admins
 - Dashboard with inventory stats
+- Full REST API for remote management
 - Add and edit laptop listings with images
 - Manage spare parts inventory
 - Process orders through workflow stages
 - Track warranties with expiration dates
 
 ### Technical
-- MongoDB backend for flexible schema
-- Base64 image storage
-- Auto-generated serial numbers
-- Session-based shopping cart
-- Simple authentication system
+- **Microservices architecture** with separate admin and guest apps
+- **JWT authentication** for stateless, Kubernetes-ready auth
+- **REST API** with CORS support for distributed deployments
+- **MongoDB backend** for flexible schema
+- **bcrypt password hashing** for security
+- **Session-based shopping cart** with persistent authentication
+- **Scalable design** ready for horizontal scaling
 
 ## Tech Stack
 
-- Backend: Flask + PyMongo
-- Database: MongoDB
-- Frontend: HTML/CSS/JavaScript with Bootstrap
-- Deployment: Docker + Docker Compose
+- **Backend**: Flask 2.3.3 + PyMongo 4.6.0
+- **Database**: MongoDB 7.0
+- **Authentication**: JWT (PyJWT 2.8.0) + bcrypt 4.1.2
+- **Architecture**: Microservices (Admin API + Guest Frontend)
+- **Frontend**: HTML/CSS/JavaScript with Bootstrap 5
+- **API**: REST with CORS support
+- **Deployment**: Docker + Docker Compose, Kubernetes-ready
 
 ## Installation
 
-### Quick Start (Docker)
+### Architecture Overview
+
+This system uses a **microservices architecture**:
+- **Admin Backend** (Port 5000): REST API + admin panel + MongoDB
+- **Guest Frontend** (Port 5001): Customer-facing storefront with authentication
+
+See [MICROSERVICES.md](MICROSERVICES.md) for detailed architecture documentation.
+
+### Quick Start (Docker - Microservices)
 
 **Prerequisites:** Docker and Docker Compose installed
 
@@ -43,31 +59,32 @@ A web-based inventory management system for laptop repair shops and resellers. B
    cd mongodb-laptop-inventory-manager
    ```
 
-2. Copy environment template
+2. Start all services
    ```bash
-   cp .env.example .env
+   docker-compose -f docker-compose-microservices.yml up -d
    ```
 
-3. Start containers
-   ```bash
-   docker-compose up -d
-   ```
+3. Access the applications:
+   - **Guest storefront**: http://localhost:5001 (register/login as customer)
+   - **Admin panel**: http://localhost:5000/admin (admin/admin123)
+   - **API documentation**: http://localhost:5000/api/health
 
-4. Initialize database
-   ```bash
-   docker-compose exec web python scripts/init_db.py
-   ```
+4. Create your first customer account:
+   - Go to http://localhost:5001/register
+   - Sign up with email and password
+   - Start shopping!
 
-5. Open http://localhost:5000
-   - Default login: `admin` / `admin123` (change this!)
+### Alternative: Monolithic Deployment (Legacy)
 
-### Alternative: Run setup script
+For a single-server deployment with everything bundled together:
+
 ```bash
-./setup.sh
+docker-compose up -d
 ```
-The script will guide you through Docker or manual setup.
 
-### Manual Setup (No Docker)
+This runs the original monolithic version on port 5000.
+
+### Manual Setup (Development)
 
 **Prerequisites:** Python 3.10+, MongoDB 5.0+
 
@@ -87,33 +104,37 @@ The script will guide you through Docker or manual setup.
    brew services start mongodb-community
    ```
 
-3. Setup Python environment
+3. Setup Admin Backend
    ```bash
    python3 -m venv venv
    source venv/bin/activate  # Windows: venv\Scripts\activate
    pip install -r requirements.txt
-   ```
-
-4. Configure environment
-   ```bash
-   cp .env.example .env
-   # Edit .env with your settings
-   ```
-
-5. Initialize database
-   ```bash
-   python scripts/init_db.py
-   ```
-
-6. Run application
-   ```bash
    cd app
-   python __init__.py
+   python app.py  # Runs on port 5000
    ```
 
-Application runs on http://localhost:5000
+4. Setup Guest Frontend (in a new terminal)
+   ```bash
+   cd guest-app
+   source ../venv/bin/activate
+   pip install -r requirements.txt
+   python app.py  # Runs on port 5001
+   ```
 
 ## Database Schema
+
+### Users Collection (NEW - JWT Authentication)
+```javascript
+{
+  _id: ObjectId,
+  email: "customer@example.com",
+  password: "$2b$12$hashed_password",  // bcrypt hashed
+  name: "John Doe",
+  created_at: ISODate,
+  is_active: true
+}
+```
+**Index**: `email` (unique)
 
 ### Laptops Collection
 ```javascript
@@ -144,6 +165,7 @@ Application runs on http://localhost:5000
 {
   _id: ObjectId,
   order_id: "ORD000001",
+  user_id: ObjectId,  // NEW - links to users collection
   customer_name: "John Doe",
   email: "john@example.com",
   phone: "+1234567890",
@@ -164,15 +186,15 @@ Application runs on http://localhost:5000
 }
 ```
 
-The database auto-creates indexes for serial numbers, order IDs, and email lookups.
+The database auto-creates indexes for serial numbers, order IDs, email lookups, and user authentication.
 
 ## Configuration
 
-Copy `.env.example` to `.env` and update:
+### Admin Backend (.env)
 
 ```env
 # MongoDB
-MONGODB_URI=mongodb://localhost:27017/laptop_inventory
+MONGODB_URI=mongodb://mongodb:27017/laptop_inventory
 # For Atlas cloud: mongodb+srv://user:pass@cluster.mongodb.net/laptop_inventory
 
 # Flask
@@ -180,96 +202,221 @@ SECRET_KEY=generate-random-key-here
 FLASK_ENV=development
 PORT=5000
 
-# Default admin (change these!)
+# Default admin credentials (change these!)
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=admin123
 ```
 
-Generate a secure SECRET_KEY:
+### Guest Frontend (.env)
+
+```env
+# Admin API connection
+ADMIN_API_URL=http://localhost:5000/api
+# For production: https://your-admin-server.com/api
+
+# JWT Authentication
+JWT_SECRET=your-jwt-secret-key-change-in-production
+JWT_EXPIRATION_HOURS=24
+
+# Flask
+SECRET_KEY=guest-app-secret-key
+FLASK_ENV=development
+PORT=5001
+
+# MongoDB (for user authentication)
+MONGODB_URI=mongodb://mongodb:27017/laptop_inventory
+```
+
+Generate secure keys:
 ```bash
+# Generate SECRET_KEY
+openssl rand -hex 32
+
+# Generate JWT_SECRET (use a different value)
 openssl rand -hex 32
 ```
 
+**Important**: Use different `JWT_SECRET` values in production!
+
 ## Usage
 
-### As a Customer
-1. Browse available laptops at `/shop`
-2. Click laptop to view details and add spare parts
-3. Add to cart and checkout
-4. Track order at `/track-order` with email and order ID
+### As a Customer (Guest App)
+
+1. **Register an account**
+   - Visit http://localhost:5001/register
+   - Create account with email and password
+   - Secure JWT authentication
+
+2. **Browse and shop**
+   - Browse laptops at http://localhost:5001/shop
+   - Click laptop to view details
+   - Add spare parts for customization
+   - Add to cart
+
+3. **Checkout**
+   - Review cart at `/cart`
+   - Proceed to checkout
+   - Fill in delivery details
+   - Complete order
+
+4. **Track orders**
+   - View order history in user dropdown
+   - Track order status
+   - All orders linked to your account
 
 ### As Admin
-1. Login at `/admin` (default: admin/admin123)
-2. Add laptops with images and specs
-3. Manage spare parts inventory
-4. Process orders: unconfirmed → confirmed → in progress → completed
-5. Track warranties
+
+1. Login at http://localhost:5000/admin
+   - Default: admin/admin123 (change this!)
+
+2. **Manage inventory**
+   - Add laptops with specs and images
+   - Upload photos (base64 encoded)
+   - Set pricing and availability
+
+3. **Manage spare parts**
+   - Add RAM, storage, accessories
+   - Set prices and stock levels
+
+4. **Process orders**
+   - View all customer orders
+   - Update status: unconfirmed → confirmed → in progress → completed
+   - View customer details
+
+5. **Track warranties**
+   - Add warranty information
+   - Monitor expiration dates
 
 ## Deployment
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed guides on:
-- VPS deployment (DigitalOcean, Linode, AWS)
-- MongoDB Atlas cloud setup
-- Raspberry Pi installation
-- Production security checklist
-- Backup strategies
+See detailed deployment guides:
+- [DEPLOYMENT.md](DEPLOYMENT.md) - VPS, MongoDB Atlas, Production setup
+- [MICROSERVICES.md](MICROSERVICES.md) - Distributed deployment, scaling
+- [docs/AUTHENTICATION.md](docs/AUTHENTICATION.md) - JWT auth system, Kubernetes
 
 ### Quick Production Notes
 
-For production use:
-- Change default admin password
-- Generate strong SECRET_KEY
-- Use MongoDB Atlas or enable authentication
-- Setup HTTPS with Nginx/Caddy
-- Configure regular backups
+**For production deployment:**
+1. Change all default passwords (admin + JWT secrets)
+2. Generate strong `SECRET_KEY` and `JWT_SECRET`
+3. Use MongoDB Atlas or enable authentication
+4. Setup HTTPS with Nginx/Caddy
+5. Configure regular backups
+6. Set `FLASK_ENV=production`
+7. Use proper CORS origins (not wildcard)
 
-Example production docker-compose:
+**Kubernetes Ready:**
+The JWT authentication is stateless and requires no session affinity. Deploy multiple guest app replicas without any special configuration. See [docs/AUTHENTICATION.md](docs/AUTHENTICATION.md) for Kubernetes manifests.
+
+### Scaling Options
+
+1. **Single Location**: Run all services on one server
+2. **Multiple Storefronts**: Deploy guest apps in different regions, all connecting to central admin API
+3. **Kubernetes**: Horizontal pod autoscaling with stateless JWT auth
+4. **Edge Deployment**: Deploy guest apps on edge locations for better performance
+
+Example multi-region:
 ```yaml
-environment:
-  - FLASK_ENV=production
-  - MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/db
+# Admin Backend (us-east)
+admin.example.com:5000
+
+# Guest Apps (multiple regions)
+us.shop.example.com  → connects to admin.example.com/api
+eu.shop.example.com  → connects to admin.example.com/api
+asia.shop.example.com → connects to admin.example.com/api
 ```
 
 ## Troubleshooting
 
 **MongoDB connection issues:**
 ```bash
-docker-compose logs mongodb
-docker-compose exec mongodb mongosh --eval "db.adminCommand('ping')"
+docker-compose -f docker-compose-microservices.yml logs mongodb
+docker exec lim_mongodb mongosh --eval "db.adminCommand('ping')"
 ```
 
-**Application errors:**
+**Admin API not responding:**
 ```bash
-docker-compose logs web
-docker-compose restart web
+docker-compose -f docker-compose-microservices.yml logs admin
+curl http://localhost:5000/api/health
 ```
 
-**Port 5000 already in use:**
+**Guest app can't connect to API:**
+```bash
+# Check ADMIN_API_URL in guest-app/.env
+docker-compose -f docker-compose-microservices.yml logs guest
+```
+
+**Authentication not working:**
+```bash
+# Rebuild guest container after adding JWT dependencies
+docker-compose -f docker-compose-microservices.yml up -d --build guest
+
+# Check JWT_SECRET is set
+docker exec lim_guest env | grep JWT
+```
+
+**Port conflicts:**
 ```bash
 sudo lsof -i :5000
-# Or change PORT in .env
+sudo lsof -i :5001
+# Kill process or change PORT in .env
 ```
 
 ## Project Structure
 
 ```
 mongodb-laptop-inventory-manager/
-├── app/
-│   ├── __init__.py           # Flask app factory
-│   ├── models/
-│   │   └── database.py       # MongoDB models
+├── app/                          # Admin Backend
+│   ├── app.py                   # Main Flask app
+│   ├── database.py              # MongoDB models
 │   ├── routes/
-│   │   ├── main.py           # Homepage
-│   │   ├── admin.py          # Admin panel routes
-│   │   ├── auth.py           # Authentication
-│   │   └── guest.py          # Shop, cart, checkout
-│   └── templates/            # Jinja2 templates
-├── scripts/
-│   └── init_db.py           # Database initialization
-├── docker-compose.yml
-├── Dockerfile
-└── requirements.txt
+│   │   ├── api.py              # REST API endpoints
+│   │   ├── admin.py            # Admin panel routes
+│   │   └── auth.py             # Admin authentication
+│   └── templates/              # Admin templates
+├── guest-app/                   # Guest Frontend
+│   ├── app.py                  # Guest Flask app
+│   ├── auth.py                 # JWT authentication
+│   ├── templates/              # Customer templates
+│   │   ├── login.html         # User login
+│   │   ├── register.html      # User registration
+│   │   ├── shop.html          # Product listing
+│   │   └── cart.html          # Shopping cart
+│   └── requirements.txt        # Guest dependencies
+├── docs/
+│   └── AUTHENTICATION.md       # JWT auth documentation
+├── docker-compose-microservices.yml  # Microservices setup
+├── docker-compose.yml          # Legacy monolithic setup
+├── MICROSERVICES.md            # Architecture guide
+├── DEPLOYMENT.md               # Deployment guide
+└── README.md
 ```
+
+## API Documentation
+
+### REST API Endpoints
+
+The admin backend exposes a RESTful API at `http://localhost:5000/api`:
+
+**Laptops**
+- `GET /api/laptops` - List all available laptops
+- `GET /api/laptops/<id>` - Get laptop by ID
+
+**Spare Parts**
+- `GET /api/spare-parts` - List all spare parts
+- `GET /api/spare-parts/<id>` - Get spare part by ID
+
+**Orders**
+- `POST /api/orders` - Create new order
+- `GET /api/orders/<order_id>` - Get order by order ID
+- `GET /api/orders/lookup?email=...&order_id=...` - Lookup order
+
+**Health Check**
+- `GET /api/health` - API status
+
+All API endpoints return JSON and support CORS for cross-origin requests.
+
+See [MICROSERVICES.md](MICROSERVICES.md) for API usage examples.
 
 ## Contributing
 
@@ -308,7 +455,7 @@ Built by **Edgar Effendi** in 2025.
 ## 📧 Contact
 
 - GitHub: [@Ang-edgar](https://github.com/Ang-edgar)
-- Repository: [mongodb-laptop-inventory-manager](https://github.com/Ang-edgar/mongodb-laptop-inventory-manager)
+- Email: edgarwineffendi@gmail.com
 
 ---
 

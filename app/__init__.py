@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from pymongo import MongoClient
 import os
 from dotenv import load_dotenv
@@ -9,6 +10,15 @@ load_dotenv()
 def create_app():
     app = Flask(__name__)
     app.secret_key = os.environ.get('SECRET_KEY', 'laptop-inventory-secret-key-2025')
+    
+    # Enable CORS for API endpoints
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": "*",  # In production, specify allowed origins
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
     
     # MongoDB connection
     mongodb_uri = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/laptop_inventory')
@@ -21,11 +31,12 @@ def create_app():
     init_database(app.db)
     
     # Register blueprints
-    from routes import main, auth, admin, guest
+    from routes import main, auth, admin, guest, api
     app.register_blueprint(main.bp)
     app.register_blueprint(auth.bp)
     app.register_blueprint(admin.bp)
     app.register_blueprint(guest.bp)
+    app.register_blueprint(api.api)  # Register API blueprint
     
     return app
 
